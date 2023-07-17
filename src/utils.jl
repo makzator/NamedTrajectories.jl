@@ -20,18 +20,25 @@ function load_traj(filename::String)
     return load(filename, "traj")
 end
 
+"""
+Forward difference (consistent with DerivativeIntegrator in QuantumCollocation.jl)
+"""
 function derivative(X::AbstractMatrix, Δt::AbstractVector)
     @assert size(X, 2) == length(Δt) "number of columns of X ($(size(X, 2))) must equal length of Δt ($(length(Δt))"
     dX = similar(X)
-    dX[:, 1] = zeros(size(X, 1))
-    for t = 2:size(X, 2)
-        Δx = X[:, t] - X[:, t - 1]
-        h = Δt[t - 1]
+    dX[:, end] = zeros(size(X, 1))
+    for t = 1:size(X, 2)-1
+        Δx = X[:, t + 1] - X[:, t]
+        h = Δt[t]
         dX[:, t] .= Δx / h
     end
     return dX
 end
 
+"""
+Trapezoidal rule.
+Maybe want to use "inverted forward difference" instead for consistency?
+"""
 function integral(X::AbstractMatrix, Δt::AbstractVector)
     ∫X = similar(X)
     ∫X[:, 1] = zeros(size(X, 1))
