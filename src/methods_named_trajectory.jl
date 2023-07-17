@@ -5,6 +5,7 @@ export add_component!
 export remove_component
 export remove_components
 export update!
+export update_bounds!
 export times
 export timesteps
 
@@ -170,12 +171,15 @@ function update!(traj::NamedTrajectory, comp::Symbol, data::AbstractMatrix{Float
 end
 
 # TODO: implement and test this
-# function update_bounds!(traj::NamedTrajectory, comp::Symbol, bounds::AbstractMatrix{Float64})
-#     @assert comp ∈ keys(traj.components)
-#     @assert size(bounds, 1) == 2
-#     @assert size(bounds, 2) == length(traj.components[comp])
-#     traj.bounds[traj.components[comp], :] = bounds
-# end
+function update_bounds!(traj::NamedTrajectory, comp::Symbol, bounds::AbstractMatrix{Float64})
+    @assert comp ∈ keys(traj.components)
+    @assert size(bounds, 1) == 2
+    @assert size(bounds, 2) == length(traj.components[comp])
+    # need to convert to Dict bc bouns is NamedTuple and thus not mutable
+    bounds_dict = Dict(pairs(traj.bounds))
+    bounds_dict[comp] = (bounds[1,:], bounds[2,:]) # (lower bound, upper bound)
+    traj.bounds = NamedTuple(bounds_dict)
+end
 
 function times(traj::NamedTrajectory)
     if traj.timestep isa Symbol
