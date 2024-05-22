@@ -10,9 +10,16 @@ using JLD2
 using ..StructNamedTrajectory
 using ..StructKnotPoint
 
-function JLD2.save(filename::String, traj::NamedTrajectory)
-    @assert split(filename, ".")[end] == "jld2"
-    save(filename, "traj", traj)
+function JLD2.save(filename::String, traj::NamedTrajectory; as_dict=false)
+    parts = split(filename, ".")
+    @assert parts[end] == "jld2"
+    if as_dict
+        filename = join(parts[1:end-2]) * parts[end-1] * "_dict.jld2"
+        d = Dict(name => traj[name] for name in traj.names)
+        save(filename, d)
+    else
+        save(filename, "traj", traj)
+    end
 end
 
 function load_traj(filename::String)
